@@ -97,6 +97,7 @@ int main(int argc, char** argv)
 
   /* Initialize array(s). */
   init_array (n, POLYBENCH_ARRAY(A));
+  polybench_prevent_dce(writeDouble2DArray("out-cpp.bin", n, n,  POLYBENCH_ARRAY(A)));
 
   /* Start timer. */
   polybench_start_instruments;
@@ -111,7 +112,7 @@ int main(int argc, char** argv)
   /* Prevent dead-code elimination. All live-out data must be printed
      by the function call in argument. */
   polybench_prevent_dce(print_array(n, POLYBENCH_ARRAY(A)));
-  polybench_prevent_dce(writeDouble2DArray("out-cpp.bin", n, n,  POLYBENCH_ARRAY(A)));
+  // polybench_prevent_dce(writeDouble2DArray("out-cpp.bin", n, n,  POLYBENCH_ARRAY(A)));
 
   /* Be clean. */
   POLYBENCH_FREE_ARRAY(A);

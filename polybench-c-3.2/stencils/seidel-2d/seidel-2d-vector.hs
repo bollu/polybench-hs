@@ -91,4 +91,4 @@ main = do
    let tsteps  = 50
    let arr = initarray n
    let out = kernel_seidel_2d tsteps n arr
-   encodeVecToFile "out-hs-vector.bin" out
+   encodeVecToFile "out-hs-vector.bin" arr
