@@ -19,8 +19,10 @@ import Data.Bits
 --       A[i][j] = ((DATA_TYPE) i*(j+2) + 2) / n;
 -- }
 
+int2double :: Int -> Double; int2double = fromIntegral;
+
 ixval :: Size -> (Ix, Ix) -> Double
-ixval n (i, j) = (fromIntegral (i * (j + 2) + 2)) / (fromIntegral n)
+ixval n (i, j) = (int2double (i * (j + 2) + 2)) / (int2double n)
 
 -- | j runs faster than i as an index.
 initarray :: Int -> Vector Double
@@ -69,10 +71,7 @@ stencil v n (i, j) =
  in (i*n+j, val)
 
 iterspace :: Size -> Vector (Int, Int)
-iterspace n = V.fromList $ do 
-  i <- [0..(n-1)]
-  j <- [0..(n-1)]
-  return (i, j)
+iterspace n = V.fromList [(i, j) | i <- [1..(n-2)], j <- [1..(n-2)]]
 
 encodeVecToFile :: String -> Vector Double -> IO ()
 encodeVecToFile f vs = B.writeFile f $ runPut $ (genericPutVectorWith (putInt32le . fromIntegral) putDoublele vs)
@@ -82,13 +81,14 @@ kernel_seidel_2d :: Steps -> Size -> Vector Double -> Vector Double
 kernel_seidel_2d tsteps n v =
   let ixs = iterspace n
       upds = V.map (stencil v n) ixs 
-  in repeatN tsteps (\v -> V.update v upds) v
+  in repeatN tsteps (\v -> V.foldl (\v ix -> V.update v (stencil v n ix)) ixs)
 
 
 main :: IO ()
 main = do
    let n = 1000
-   let tsteps  = 50
+   let tsteps  = 20
    let arr = initarray n
    let out = kernel_seidel_2d tsteps n arr
-   encodeVecToFile "out-hs-vector.bin" arr
+   encodeVecToFile "in-hs-vector.bin" arr
+   encodeVecToFile "out-hs-vector.bin" out

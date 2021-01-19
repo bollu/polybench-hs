@@ -28,7 +28,7 @@ void init_array (int n,
 
   for (i = 0; i < n; i++)
     for (j = 0; j < n; j++)
-      A[i][j] = ((DATA_TYPE) i*(j+2) + 2) / n;
+      A[i][j] =  ((DATA_TYPE) i*(j+2) + 2) / n;
 }
 
 
@@ -72,6 +72,7 @@ void kernel_seidel_2d(int tsteps,
 		      DATA_TYPE POLYBENCH_2D(A,N,N,n,n))
 {
   int t, i, j;
+  // printf("tsteps: %d\n", _PB_TSTEPS); assert(0);
 
 #pragma scop
   for (t = 0; t <= _PB_TSTEPS - 1; t++)
@@ -97,7 +98,7 @@ int main(int argc, char** argv)
 
   /* Initialize array(s). */
   init_array (n, POLYBENCH_ARRAY(A));
-  polybench_prevent_dce(writeDouble2DArray("out-cpp.bin", n, n,  POLYBENCH_ARRAY(A)));
+  polybench_prevent_dce(writeDouble2DArray("in-cpp.bin", n, n,  POLYBENCH_ARRAY(A)));
 
   /* Start timer. */
   polybench_start_instruments;
@@ -112,7 +113,7 @@ int main(int argc, char** argv)
   /* Prevent dead-code elimination. All live-out data must be printed
      by the function call in argument. */
   polybench_prevent_dce(print_array(n, POLYBENCH_ARRAY(A)));
-  // polybench_prevent_dce(writeDouble2DArray("out-cpp.bin", n, n,  POLYBENCH_ARRAY(A)));
+  polybench_prevent_dce(writeDouble2DArray("out-cpp.bin", n, n,  POLYBENCH_ARRAY(A)));
 
   /* Be clean. */
   POLYBENCH_FREE_ARRAY(A);
