@@ -24,7 +24,7 @@ ixval n (i, j) = (fromIntegral (i * (j + 2) + 2)) / (fromIntegral n)
 
 -- | j runs faster than i as an index.
 initarray :: Int -> Vector Double
-initarray n = V.fromList $ [ ixval n (i, j) | i <- [0..n], j <- [0..n]]
+initarray n = V.fromList $ [ ixval n (i, j) | i <- [0..(n-1)], j <- [0..(n-1)]]
 
 type Steps = Int;
 type Size = Int;
@@ -87,7 +87,7 @@ kernel_seidel_2d tsteps n v =
 
 main :: IO ()
 main = do
-   let n = 1024
+   let n = 1000
    let tsteps  = 50
    let arr = initarray n
    let out = kernel_seidel_2d tsteps n arr

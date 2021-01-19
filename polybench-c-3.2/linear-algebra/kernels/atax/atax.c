@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 /* Include polybench common header. */
 #include <polybench.h>
@@ -33,6 +34,16 @@ void init_array (int nx, int ny,
       A[i][j] = ((DATA_TYPE) i*(j+1)) / nx;
 }
 
+
+void writeDoubleArray(const char *filename, int len, double *xs) {
+  FILE *fp = fopen(filename, "wb");
+  assert(fp && "unable to open file to write array");
+  fwrite((void *)&len, sizeof(int), 1, fp);
+  for (int i = 0; i < len; ++i) {
+    fwrite(xs + i, sizeof(double), 1, fp);
+  }
+  fclose(fp);
+}
 
 /* DCE code. Must scan the entire live-out data.
    Can be used also to check the correctness of the output. */
