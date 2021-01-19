@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 /* Include polybench common header. */
 #include <polybench.h>
@@ -28,6 +29,20 @@ void init_array (int n,
   for (i = 0; i < n; i++)
     for (j = 0; j < n; j++)
       A[i][j] = ((DATA_TYPE) i*(j+2) + 2) / n;
+}
+
+
+void writeDouble2DArray(const char *filename, int n, int m, double xs[n][m]) {
+  FILE *fp = fopen(filename, "wb");
+  assert(fp && "unable to open file to write array");
+  int len = n*m;
+  fwrite((void *)&len, sizeof(int), 1, fp);
+  for (int i = 0; i < n; ++i) {
+      for (int j = 0; j < m; ++j) {
+          fwrite(&xs[i][j] , sizeof(double), 1, fp);
+      }
+  }
+  fclose(fp);
 }
 
 
@@ -96,6 +111,7 @@ int main(int argc, char** argv)
   /* Prevent dead-code elimination. All live-out data must be printed
      by the function call in argument. */
   polybench_prevent_dce(print_array(n, POLYBENCH_ARRAY(A)));
+  polybench_prevent_dce(writeDouble2DArray("out-cpp.bin", n, n,  POLYBENCH_ARRAY(A)));
 
   /* Be clean. */
   POLYBENCH_FREE_ARRAY(A);
