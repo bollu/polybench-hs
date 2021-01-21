@@ -28,6 +28,8 @@ bench-cpp:
 		--polly-ast-detect-parallel \
 		--polly-pattern-matching-based-opts \
 		-polly-codegen-emit-rtc-print \
+		--polly-ast-print-accesses \
+		--polly-overflow-tracking=never \
 		seidel-2d-linked.ll -S -o out.ll 
 	llc out.ll -o out.o -filetype=obj -relocation-model=pic 
 	gcc out.o  -L$(pwd) -L../build -lm -o bench-cpp.out -lgomp
