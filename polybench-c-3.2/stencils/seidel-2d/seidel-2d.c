@@ -72,7 +72,7 @@ void kernel_seidel_2d(int tsteps,
 		      DATA_TYPE POLYBENCH_2D(A,N,N,n,n))
 {
   int t, i, j;
-  // printf("tsteps: %d\n", _PB_TSTEPS); assert(0);
+  // printf("tsteps: %d\n", _PB_TSTEPS);  assert(0);
 
 #pragma scop
   for (t = 0; t <= _PB_TSTEPS - 1; t++)
@@ -91,6 +91,7 @@ int main(int argc, char** argv)
   /* Retrieve problem size. */
   int n = N;
   int tsteps = TSTEPS;
+  // printf("n: %d | tsteps: %d\n", _n, tsteps);  assert(0);
 
   /* Variable declaration/allocation. */
   POLYBENCH_2D_ARRAY_DECL(A, DATA_TYPE, N, N, n, n);
@@ -112,7 +113,7 @@ int main(int argc, char** argv)
 
   /* Prevent dead-code elimination. All live-out data must be printed
      by the function call in argument. */
-  polybench_prevent_dce(print_array(n, POLYBENCH_ARRAY(A)));
+  // polybench_prevent_dce(print_array(n, POLYBENCH_ARRAY(A)));
   polybench_prevent_dce(writeDouble2DArray("out-cpp.bin", n, n,  POLYBENCH_ARRAY(A)));
 
   /* Be clean. */
