@@ -3,7 +3,6 @@
 
 bench-cpp:
 	-rm bench-cpp.out
-	 # gcc -O3 -I ../../utilities -I ./ ../../utilities/polybench.c ./2mm.c -DPOLYBENCH_TIME -o bench-cpp.out
 	 clang -c -S -emit-llvm -O3 -mllvm -disable-llvm-optzns  -I ../../utilities -I ./ ../../utilities/polybench.c ./2mm.c -DPOLYBENCH_TIME 
 	 llvm-link  -S polybench.ll 2mm.ll -o 2mm-linked.ll
 	 opt -correlated-propagation -mem2reg -instcombine -loop-simplify -indvars \
@@ -37,15 +36,24 @@ bench-cpp:
 
 reference-cpp:
 	-rm out-cpp.bin
-	 clang -O0 -I ../../utilities -I ./ ../../utilities/polybench.c ./2mm.c -DPOLYBENCH_DUMP_ARRAYS -o reference-cpp.out
+	 clang -O0 -I ./../../../utilities/ -I ./ ./../../../utilities/polybench.c ./2mm.c -DPOLYBENCH_DUMP_ARRAYS -o reference-cpp.out
 	 time ./reference-cpp.out
-	 sha256sum in-cpp.bin
-	 sha256sum out-cpp.bin
+	 sha256sum a-in-cpp.bin
+	 sha256sum b-in-cpp.bin
+	 sha256sum c-in-cpp.bin
+	 sha256sum d-in-cpp.bin
+	 # sha256sum out-cpp.bin
 
-hs-vec: reference-cpp
+# hs-vec: reference-cpp
+hs-vec:
 	-rm out-hs-vec.bin
 	ghc -O2 -fllvm ./2mm-vector.hs -o 2mm-vector.out
 	time ./2mm-vector.out
-	sha256sum in-hs-vector.bin
-	sha256sum out-hs-vector.bin
-	diff out-cpp.bin out-hs-vector.bin
+	sha256sum a-in-hs-vector.bin
+	sha256sum b-in-hs-vector.bin
+	sha256sum c-in-hs-vector.bin
+	sha256sum d-in-hs-vector.bin
+	diff a-in-hs-vector.bin a-in-cpp.bin
+	diff b-in-hs-vector.bin b-in-cpp.bin
+	diff c-in-hs-vector.bin c-in-cpp.bin
+	diff d-in-hs-vector.bin d-in-cpp.bin

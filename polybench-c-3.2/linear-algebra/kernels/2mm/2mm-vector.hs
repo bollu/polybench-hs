@@ -14,16 +14,6 @@ import Data.Bits
 type Vec = MVector GHC.Prim.RealWorld Double
 
 
--- static void init_array (int n,
--- 		 DATA_TYPE POLYBENCH_2D(A,N,N,n,n))
--- {
---   int i, j;
--- 
---   for (i = 0; i < n; i++)
---     for (j = 0; j < n; j++)
---       A[i][j] = ((DATA_TYPE) i*(j+2) + 2) / n;
--- }
-
 int2double :: Int -> Double; int2double = fromIntegral;
 
 ixval :: Size -> (Ix, Ix) -> Double
@@ -38,22 +28,6 @@ repeatN :: Int -> IO () -> IO ()
 repeatN 0 f = return ()
 repeatN n f = f >> repeatN (n-1) f
 
--- static void kernel_seidel_2d(int tsteps,
--- 		      int n,
--- 		      DATA_TYPE POLYBENCH_2D(A,N,N,n,n))
--- {
---   int t, i, j;
--- 
--- #pragma scop
---   for (t = 0; t <= _PB_TSTEPS - 1; t++)
---     for (i = 1; i<= _PB_N - 2; i++)
---       for (j = 1; j <= _PB_N - 2; j++)
--- 	A[i][j] = (A[i-1][j-1] + A[i-1][j] + A[i-1][j+1]
--- 		   + A[i][j-1] + A[i][j] + A[i][j+1]
--- 		   + A[i+1][j-1] + A[i+1][j] + A[i+1][j+1])/9.0;
--- #pragma endscop
--- 
--- }
 
 ix2d :: Vec -> Size -> (Ix, Ix) -> IO Double
 ix2d v n (i,j) = unsafeRead v (i*n+j)
@@ -100,21 +74,41 @@ kernel :: Steps -> Size -> Vec -> IO ()
 kernel tsteps n v =
   repeatN tsteps (kerneli n 1 v)
 
---- | j runs faster than i as an index.
-initarray :: Int -> IO Vec
-initarray n = do
-  v <- M.replicate (n*n) 0.0
-  Control.Monad.forM_ [0..(n-1)] $ \i -> 
-    Control.Monad.forM_ [0..(n-1)] $ \j -> 
-        unsafeWrite v (i*n+j)  $ (int2double (i * (j + 2) + 2)) / (int2double n)
-  return v
+initarray :: (Int, Int, Int, Int) -> IO (Double, Double, Vec, Vec, Vec, Vec)
+initarray (ni, nj, nk, nl) = do
+  let alpha = 32412
+  let beta = 2123
+  a <- M.replicate (ni*nk) 0.0
+  b <- M.replicate (nk*nj) 0.0
+  c <- M.replicate (nl*nj) 0.0
+  d <- M.replicate (ni*nl) 0.0
+
+  Control.Monad.forM_ [0..(ni-1)] $ \i -> 
+    Control.Monad.forM_ [0..(nk-1)] $ \j -> 
+        unsafeWrite a (i*nk+j)  $ (int2double (i * j) / (int2double ni))
+
+  Control.Monad.forM_ [0..(nk-1)] $ \i -> 
+    Control.Monad.forM_ [0..(nj-1)] $ \j -> 
+        unsafeWrite b (i*nj+j)  $ (int2double (i * (j+1)) / (int2double nj))
+
+  Control.Monad.forM_ [0..(nl-1)] $ \i -> 
+    Control.Monad.forM_ [0..(nj-1)] $ \j -> 
+        unsafeWrite c (i*nj+j)  $ (int2double (i * (j+3)) / (int2double nl))
+
+  Control.Monad.forM_ [0..(ni-1)] $ \i -> 
+    Control.Monad.forM_ [0..(nl-1)] $ \j -> 
+        unsafeWrite d (i*nj+j)  $ (int2double (i * (j+2)) / (int2double nk))
+
+  return (alpha, beta, a, b, c, d)
     -- V.fromList $ [ ixval n (i, j) | i <- [0..(n-1)], j <- [0..(n-1)]]
 
 main :: IO ()
 main = do
-   let n = 4000
-   let tsteps  = 100
-   arr <- initarray n
-   encodeVecToFile "in-hs-vector.bin" arr
-   kernel tsteps n arr
-   encodeVecToFile "out-hs-vector.bin" arr
+   let (ni, nj, nk, nl) =  (1024, 1024, 1024, 1024)
+   (alpha, beta, a, b, c, d) <- initarray (ni, nj, nk, nl)
+   encodeVecToFile "a-in-hs-vector.bin" a
+   encodeVecToFile "b-in-hs-vector.bin" b
+   encodeVecToFile "c-in-hs-vector.bin" c
+   encodeVecToFile "d-in-hs-vector.bin" d
+   -- kernel tsteps n arr
+   -- encodeVecToFile "out-hs-vector.bin" arr

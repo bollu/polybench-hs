@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 /* Include polybench common header. */
 #include <polybench.h>
@@ -16,6 +17,21 @@
 /* Include benchmark-specific header. */
 /* Default data type is double, default size is 4000. */
 #include "2mm.h"
+
+
+void writeDouble2DArray(const char *filename, int n, int m, double *xs) {
+  FILE *fp = fopen(filename, "wb");
+  assert(fp && "unable to open file to write array");
+  int len = n*m;
+  fwrite((void *)&len, sizeof(int), 1, fp);
+  for (int i = 0; i < n; ++i) {
+      for (int j = 0; j < m; ++j) {
+          fwrite(&xs[i*m+j] , sizeof(double), 1, fp);
+      }
+  }
+  fclose(fp);
+}
+
 
 
 /* Array initialization. */
@@ -122,6 +138,11 @@ int main(int argc, char** argv)
 	      POLYBENCH_ARRAY(B),
 	      POLYBENCH_ARRAY(C),
 	      POLYBENCH_ARRAY(D));
+
+  writeDouble2DArray("a-in-cpp.bin", NI, NK, A);
+  writeDouble2DArray("b-in-cpp.bin", NK, NJ, B);
+  writeDouble2DArray("c-in-cpp.bin", NL, NJ, C);
+  writeDouble2DArray("d-in-cpp.bin", NI, NL, D);
 
   /* Start timer. */
   polybench_start_instruments;
