@@ -1,10 +1,13 @@
 * * * * * * * * * *
-* PolyBench/C 3.2 *
+* PolyBench/hs 3.2 *
 * * * * * * * * * *
 
 Copyright (c) 2011-2012 the Ohio State University.
 Contact: Louis-Noel Pouchet <pouchet@cse.ohio-state.edu>
 
+Translated programs:
+- linear-algebra/kernels/2mm
+- stencils/seidel-2d
 
 -------------
 * New in 3.2:
